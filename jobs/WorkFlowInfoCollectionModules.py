@@ -1,11 +1,13 @@
-import os
-import sys
 import json
+import os
 import pprint
+import sys
 from operator import itemgetter
 from time import time
 sys.path.append('/afs/cern.ch/user/m/magradze/dfs/cms-bot-hermag/cms-bot')
 from es_utils import es_query, es_workflow_stats, format
+
+
 
 
 def get_wf_info_from_es():
@@ -16,13 +18,51 @@ def get_wf_info_from_es():
                        end_time=int(time() * 1000))
     return wf_hits
 
-'''
+
+def get_release(item):
+    return item['_source']["release"]
+
+
+def get_workflow_id(item):
+    return item['_source']["workflow"]
+
+
+def get_step_id(item):
+    return item['_source']["step"]
+
+
+def get_cpu_avg(item):
+    return item['_source']["cpu_avg"]
+
+
+def get_mem_avg(item):
+    return item['_source']["vms_avg"]
+
+
 def GroupWorkFlowsByReleaseArch(jsonData):
-    release_arch = ()
+    wfs = {}
     for wf_info in jsonData:
-        
+        #release_arch = ()
+        #release_arch = (wf_info["_source"]["release"], wf_info["_source"]["architecture"])
+        # if release_arch not in wfs.keys():
+        #    wfs[release_arch] = {}
+        # else:
+        #    pass
+        # if wf_info["_source"]["workflow"] in wfs[release_arch].keys():
+        #    wfs[release_arch][wf_info["_source"]["workflow"]][wf_info["_source"]["step"]] = {}
+        #    wfs[release_arch][wf_info["_source"]["workflow"]][wf_info["_source"]["step"]][]
+        # wfs[release_arch][]
+        # print wf_info["_source"]["architecture"]
+        # print wf_info["_source"]["release"]
+        # print wf_info["_source"]["workflow"]
+        # print wf_info["_source"]["step"]
+        print get_release(wf_info)
+        print get_workflow_id(wf_info)
+        print get_step_id(wf_info)
+        print get_cpu_avg(wf_info)
+        print get_mem_avg(wf_info)
     return 0
-'''
+
 
 def workflow_output_check(jsonData):
     try:
@@ -34,25 +74,27 @@ def workflow_output_check(jsonData):
     except:
         return False
 
+
 def dump_json_data(file_name, jsonData):
     if workflow_output_check(jsonData):
-        #GroupWorkFlowsByReleaseArch(jsonData['hits']['hits'])
+        GroupWorkFlowsByReleaseArch(jsonData['hits']['hits'])
         with open(file_name, 'w') as outfile:
-            json.dump(jsonData['hits']['hits'], outfile, sort_keys = True, indent = 4)
+            json.dump(jsonData['hits']['hits'], outfile, sort_keys=True, indent=4)
         return True
     return False
+
 
 def get_statistics(workflows):
     print workflows.keys()
     print "hits ---> ", workflows['hits'].keys()
     print "hits --> hits ---> "
-    #pprint.pprint(workflows['hits']['hits'])
+    # pprint.pprint(workflows['hits']['hits'])
     print "hits --> total ---> "
-    #pprint.pprint(workflows['hits']['total'])
+    # pprint.pprint(workflows['hits']['total'])
     print "hits --> max_score ---> "
-    #pprint.pprint(workflows['hits']['max_score'])
-    #print "took ---> ", workflows['hits'].keys()
-    #pprint.pprint(workflows['hits']['took'])
+    # pprint.pprint(workflows['hits']['max_score'])
+    # print "took ---> ", workflows['hits'].keys()
+    # pprint.pprint(workflows['hits']['took'])
     print "timed_out ---> "
     pprint.pprint(workflows['timed_out'])
     return 0
