@@ -7,9 +7,6 @@ from time import time
 sys.path.append('/afs/cern.ch/user/m/magradze/dfs/cms-bot-hermag/cms-bot')
 from es_utils import es_query, es_workflow_stats, format
 
-
-
-
 def get_wf_info_from_es():
     query_info = {'workflows': '*', 'architecture': 'slc6_amd64_gcc700', 'release_cycle': 'CMSSW_10_4_X_*'}
     wf_hits = es_query(index='relvals_stats_*',
@@ -20,7 +17,10 @@ def get_wf_info_from_es():
 
 
 def get_release(item):
-    return item['_source']["release"]
+    cmssw_release = str(item['_source']["release"]).replace("-", "_")
+    cmssw_release_list = cmssw_release.split("_")
+    cmssw_release = "CMSSW_%s_%s_X" % (str(cmssw_release_list[1]), str(cmssw_release_list[2]))
+    return cmssw_release
 
 
 def get_workflow_id(item):
@@ -42,20 +42,6 @@ def get_mem_avg(item):
 def GroupWorkFlowsByReleaseArch(jsonData):
     wfs = {}
     for wf_info in jsonData:
-        #release_arch = ()
-        #release_arch = (wf_info["_source"]["release"], wf_info["_source"]["architecture"])
-        # if release_arch not in wfs.keys():
-        #    wfs[release_arch] = {}
-        # else:
-        #    pass
-        # if wf_info["_source"]["workflow"] in wfs[release_arch].keys():
-        #    wfs[release_arch][wf_info["_source"]["workflow"]][wf_info["_source"]["step"]] = {}
-        #    wfs[release_arch][wf_info["_source"]["workflow"]][wf_info["_source"]["step"]][]
-        # wfs[release_arch][]
-        # print wf_info["_source"]["architecture"]
-        # print wf_info["_source"]["release"]
-        # print wf_info["_source"]["workflow"]
-        # print wf_info["_source"]["step"]
         print get_release(wf_info)
         print get_workflow_id(wf_info)
         print get_step_id(wf_info)
