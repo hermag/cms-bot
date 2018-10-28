@@ -40,9 +40,8 @@ def get_mem_avg(item):
     return item['_source']["vms_avg"]
 
 
-def GetWorkFlowsByReleaseArch(jsonData):
+def GroupWorkFlowInfoByReleaseArch(jsonData):
     wfs = {}
-    print "Entered GetWorkFlowsByReleaseArch"
     for wf_info in jsonData['hits']['hits']:
         release = str(get_release(wf_info))
         workflowid = str(get_workflow_id(wf_info))
@@ -59,29 +58,31 @@ def GetWorkFlowsByReleaseArch(jsonData):
             wfs[release][workflowid][stepid]["mem_avg"] = []
         wfs[release][workflowid][stepid]["cpu_avg"].append(float(cpu_avg))
         wfs[release][workflowid][stepid]["mem_avg"].append(float(mem_avg))
-    with open('output.json', 'w') as outfile:
-        json.dump(wfs, outfile, sort_keys=True, indent=4)
+    # with open('output.json', 'w') as outfile:
+    #    json.dump(wfs, outfile, sort_keys=True, indent=4)
     return wfs
 
 
-'''
-def GroupWorkFlowInfoByReleaseArch(raw_wfs):
-    groupedwfs = {}
-    print "Entered GroupWorkFlowInfoByReleaseArch"
-    for wf_info in raw_wfs.keys():
+def AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs):
+    av_grpd_wf_by_rel_arch = {}
+    for cmssw_release in grouped_wfs.keys():
+        av_grpd_wf_by_rel_arch[cmssw_release] = {}
+        for workflowid in grouped_wfs[cmssw_release].keys():
+            av_grpd_wf_by_rel_arch[cmssw_release][workflowid] = {}
+            for stepid in grouped_wfs[cmssw_release][workflowid].keys():
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid] = {}
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['cpu_avg'] = sum(
+                    grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']) / float(len(grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']))
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['mem_avg'] = sum(
+                    grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']) / float(len(grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']))
+    return av_grpd_wf_by_rel_arch
 
-        if cmssw_release not in groupedwfs.keys():
-            groupedwfs[release] = {}
-        if workflowid not in wfs[release].keys():
-            wfs[release][workflowid] = {}
-        if stepid not in wfs[release][workflowid].keys():
-            wfs[release][workflowid][stepid] = {}
-        wfs[release][workflowid][stepid]["cpu_avg"] = cpu_avg
-        wfs[release][workflowid][stepid]["mem_avg"] = mem_avg
-    with open('output.json', 'w') as outfile:
-        json.dump(wfs, outfile, sort_keys=True, indent=4)
-    return wfs
-'''
+
+def dump_wf_data(json_data):
+    for workflow in json_data.keys():
+        json_file_name = "%s.json" % str(workflow)
+        with open(json_file_name, 'w') as outfile:
+            json.dump(json_data[workflow], outfile, sort_keys=True, indent=4)
 
 
 def workflow_output_check(jsonData):
@@ -98,24 +99,7 @@ def workflow_output_check(jsonData):
 def dump_json_data(file_name, jsonData):
     raw_wfs = {}
     if workflow_output_check(jsonData):
-        #raw_wfs = GetWorkFlowsByReleaseArch(jsonData['hits']['hits'])
         with open(file_name, 'w') as outfile:
             json.dump(jsonData['hits']['hits'], outfile, sort_keys=True, indent=4)
         return True
     return False
-
-
-def get_statistics(workflows):
-    print workflows.keys()
-    print "hits ---> ", workflows['hits'].keys()
-    print "hits --> hits ---> "
-    # pprint.pprint(workflows['hits']['hits'])
-    print "hits --> total ---> "
-    # pprint.pprint(workflows['hits']['total'])
-    print "hits --> max_score ---> "
-    # pprint.pprint(workflows['hits']['max_score'])
-    # print "took ---> ", workflows['hits'].keys()
-    # pprint.pprint(workflows['hits']['took'])
-    print "timed_out ---> "
-    pprint.pprint(workflows['timed_out'])
-    return 0

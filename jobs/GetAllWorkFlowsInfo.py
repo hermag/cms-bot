@@ -38,11 +38,11 @@ if __name__ == '__main__':
     file_name = "workflows.json"
     opt, args = get_opt()
     wfs = {}
-    wfs = get_wf_info_from_es()
-    raw_wfs = GetWorkFlowsByReleaseArch(wfs)
-    #workflowinfo = GroupWorkFlowInfoByReleaseArch(raw_wfs)
-    if dump_json_data(file_name, wfs):
+    raw_wfs = get_wf_info_from_es()
+    grouped_wfs = GroupWorkFlowInfoByReleaseArch(raw_wfs)
+    averaged_wfs = AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs)
+    dump_wf_data(averaged_wfs)
+    if dump_json_data(file_name, raw_wfs):
         print "json file %s has been dumped." % file_name
     else:
         print "json file %s dump has failed." % file_name
-    get_statistics(wfs)
