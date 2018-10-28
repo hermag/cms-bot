@@ -7,6 +7,7 @@ from time import time
 sys.path.append('/afs/cern.ch/user/m/magradze/dfs/cms-bot-hermag/cms-bot')
 from es_utils import es_query, es_workflow_stats, format
 
+
 def get_wf_info_from_es():
     query_info = {'workflows': '*', 'architecture': 'slc6_amd64_gcc700', 'release_cycle': 'CMSSW_10_4_X_*'}
     wf_hits = es_query(index='relvals_stats_*',
@@ -39,15 +40,48 @@ def get_mem_avg(item):
     return item['_source']["vms_avg"]
 
 
-def GroupWorkFlowsByReleaseArch(jsonData):
+def GetWorkFlowsByReleaseArch(jsonData):
     wfs = {}
-    for wf_info in jsonData:
-        print get_release(wf_info)
-        print get_workflow_id(wf_info)
-        print get_step_id(wf_info)
-        print get_cpu_avg(wf_info)
-        print get_mem_avg(wf_info)
-    return 0
+    print "Entered GetWorkFlowsByReleaseArch"
+    for wf_info in jsonData['hits']['hits']:
+        release = str(get_release(wf_info))
+        workflowid = str(get_workflow_id(wf_info))
+        stepid = str(get_step_id(wf_info))
+        cpu_avg = float(get_cpu_avg(wf_info))
+        mem_avg = float(get_mem_avg(wf_info))
+        if release not in wfs.keys():
+            wfs[release] = {}
+        if workflowid not in wfs[release].keys():
+            wfs[release][workflowid] = {}
+        if stepid not in wfs[release][workflowid].keys():
+            wfs[release][workflowid][stepid] = {}
+            wfs[release][workflowid][stepid]["cpu_avg"] = []
+            wfs[release][workflowid][stepid]["mem_avg"] = []
+        wfs[release][workflowid][stepid]["cpu_avg"].append(float(cpu_avg))
+        wfs[release][workflowid][stepid]["mem_avg"].append(float(mem_avg))
+    with open('output.json', 'w') as outfile:
+        json.dump(wfs, outfile, sort_keys=True, indent=4)
+    return wfs
+
+
+'''
+def GroupWorkFlowInfoByReleaseArch(raw_wfs):
+    groupedwfs = {}
+    print "Entered GroupWorkFlowInfoByReleaseArch"
+    for wf_info in raw_wfs.keys():
+
+        if cmssw_release not in groupedwfs.keys():
+            groupedwfs[release] = {}
+        if workflowid not in wfs[release].keys():
+            wfs[release][workflowid] = {}
+        if stepid not in wfs[release][workflowid].keys():
+            wfs[release][workflowid][stepid] = {}
+        wfs[release][workflowid][stepid]["cpu_avg"] = cpu_avg
+        wfs[release][workflowid][stepid]["mem_avg"] = mem_avg
+    with open('output.json', 'w') as outfile:
+        json.dump(wfs, outfile, sort_keys=True, indent=4)
+    return wfs
+'''
 
 
 def workflow_output_check(jsonData):
@@ -62,8 +96,9 @@ def workflow_output_check(jsonData):
 
 
 def dump_json_data(file_name, jsonData):
+    raw_wfs = {}
     if workflow_output_check(jsonData):
-        GroupWorkFlowsByReleaseArch(jsonData['hits']['hits'])
+        #raw_wfs = GetWorkFlowsByReleaseArch(jsonData['hits']['hits'])
         with open(file_name, 'w') as outfile:
             json.dump(jsonData['hits']['hits'], outfile, sort_keys=True, indent=4)
         return True
