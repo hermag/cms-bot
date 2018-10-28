@@ -12,12 +12,12 @@ def get_wf_info_from_es(release, architecture):
     query_info = {'workflows': '*',
                   'architecture': architecture,
                   'release_cycle': release}
-
-    #wf_hits = es_query(index='relvals_stats_*',
-    #                   query='*',
-    #                   start_time=int(time() * 1000) - int(86400 * 1000 * 7),
-    #                   end_time=int(time() * 1000))
-
+    '''
+    wf_hits = es_query(index='relvals_stats_*',
+                       query='*',
+                       start_time=int(time() * 1000) - int(86400 * 1000 * 7),
+                       end_time=int(time() * 1000))
+    '''
     wf_hits = es_query(index='relvals_stats_*',
                        query=format(
                            'release:%(release_cycle)s AND architecture:%(architecture)s AND (%(workflows)s)', **query_info),
@@ -67,8 +67,6 @@ def GroupWorkFlowInfoByReleaseArch(jsonData):
             wfs[release][workflowid][stepid]["mem_avg"] = []
         wfs[release][workflowid][stepid]["cpu_avg"].append(float(cpu_avg))
         wfs[release][workflowid][stepid]["mem_avg"].append(float(mem_avg))
-    # with open('output.json', 'w') as outfile:
-    #    json.dump(wfs, outfile, sort_keys=True, indent=4)
     return wfs
 
 
