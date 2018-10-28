@@ -8,10 +8,19 @@ sys.path.append('/afs/cern.ch/user/m/magradze/dfs/cms-bot-hermag/cms-bot')
 from es_utils import es_query, es_workflow_stats, format
 
 
-def get_wf_info_from_es():
-    query_info = {'workflows': '*', 'architecture': 'slc6_amd64_gcc700', 'release_cycle': 'CMSSW_10_4_X_*'}
+def get_wf_info_from_es(release, architecture):
+    query_info = {'workflows': '*',
+                  'architecture': architecture,
+                  'release_cycle': release}
+
+    #wf_hits = es_query(index='relvals_stats_*',
+    #                   query='*',
+    #                   start_time=int(time() * 1000) - int(86400 * 1000 * 7),
+    #                   end_time=int(time() * 1000))
+
     wf_hits = es_query(index='relvals_stats_*',
-                       query='*',
+                       query=format(
+                           'release:%(release_cycle)s AND architecture:%(architecture)s AND (%(workflows)s)', **query_info),
                        start_time=int(time() * 1000) - int(86400 * 1000 * 7),
                        end_time=int(time() * 1000))
     return wf_hits
@@ -78,13 +87,6 @@ def AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs):
     return av_grpd_wf_by_rel_arch
 
 
-def dump_wf_data(json_data):
-    for workflow in json_data.keys():
-        json_file_name = "%s.json" % str(workflow)
-        with open(json_file_name, 'w') as outfile:
-            json.dump(json_data[workflow], outfile, sort_keys=True, indent=4)
-
-
 def workflow_output_check(jsonData):
     try:
         if 'hits' in jsonData.keys():
@@ -94,6 +96,13 @@ def workflow_output_check(jsonData):
             return False
     except:
         return False
+
+
+def dump_wf_data(json_data):
+    for workflow in json_data.keys():
+        json_file_name = "%s.json" % str(workflow)
+        with open(json_file_name, 'w') as outfile:
+            json.dump(json_data[workflow], outfile, sort_keys=True, indent=4)
 
 
 def dump_json_data(file_name, jsonData):
