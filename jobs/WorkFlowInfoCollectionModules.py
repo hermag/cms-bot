@@ -38,12 +38,24 @@ def get_step_id(item):
     return item['_source']["step"]
 
 
+def get_step_number(item):
+    return int(item['_source']["step"].replace("step",''))
+
+
+def get_cpuTimeEvent(item):
+    return float(item['_source']["time"])
+
+
+def get_maxCPUs(item):
+    return int(item['_source']["processes"])
+
+
 def get_cpu_avg(item):
     return item['_source']["cpu_avg"]
 
 
 def get_mem_avg(item):
-    return item['_source']["vms_avg"]
+    return item['_source']["shared_avg"]
 
 
 def GroupWorkFlowInfoByReleaseArch(jsonData):
@@ -54,18 +66,26 @@ def GroupWorkFlowInfoByReleaseArch(jsonData):
         rls_arch_tuple = (release, architecture)
         workflowid = str(get_workflow_id(wf_info))
         stepid = str(get_step_id(wf_info))
-        cpu_avg = float(get_cpu_avg(wf_info))
-        mem_avg = float(get_mem_avg(wf_info))
+        cpuTimePerEvent = get_cpuTimeEvent(wf_info)
+        maxCPU = get_maxCPUs(wf_info)
+        stepnumber = get_step_number(wf_info)
+        avgMEM = float(get_mem_avg(wf_info))
         if rls_arch_tuple not in wfs.keys():
             wfs[rls_arch_tuple] = {}
         if workflowid not in wfs[rls_arch_tuple].keys():
             wfs[rls_arch_tuple][workflowid] = {}
         if stepid not in wfs[rls_arch_tuple][workflowid].keys():
             wfs[rls_arch_tuple][workflowid][stepid] = {}
-            wfs[rls_arch_tuple][workflowid][stepid]["cpu_avg"] = []
-            wfs[rls_arch_tuple][workflowid][stepid]["mem_avg"] = []
-        wfs[rls_arch_tuple][workflowid][stepid]["cpu_avg"].append(float(cpu_avg))
-        wfs[rls_arch_tuple][workflowid][stepid]["mem_avg"].append(float(mem_avg))
+            wfs[rls_arch_tuple][workflowid][stepid]['cpuTimePerEvent'] = []
+            wfs[rls_arch_tuple][workflowid][stepid]['maxCPUs'] = []
+            wfs[rls_arch_tuple][workflowid][stepid]['stepNumber'] = stepnumber
+            wfs[rls_arch_tuple][workflowid][stepid]['avgMEM'] = []
+            wfs[rls_arch_tuple][workflowid][stepid]['workflowNumber'] = workflowid
+        wfs[rls_arch_tuple][workflowid][stepid]['cpuTimePerEvent'].append(cpuTimePerEvent)
+        wfs[rls_arch_tuple][workflowid][stepid]['maxCPUs'].append(maxCPU)
+        wfs[rls_arch_tuple][workflowid][stepid]['avgMEM'].append(avgMEM)
+        wfs[rls_arch_tuple][workflowid][stepid]['stepNumber'] = stepnumber
+        wfs[rls_arch_tuple][workflowid][stepid]['workflowNumber'] = workflowid
     return wfs
 
 
@@ -77,12 +97,19 @@ def AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs):
             av_grpd_wf_by_rel_arch[cmssw_release][workflowid] = {}
             for stepid in grouped_wfs[cmssw_release][workflowid].keys():
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid] = {}
-                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['cpu_avg'] = sum(
-                    grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']) / float(\
-                    len(grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']))
-                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['mem_avg'] = sum(
-                    grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']) / float(\
-                    len(grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']))
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['cpuTimePerEvent'] = "%.2f"%round(sum(
+                    grouped_wfs[cmssw_release][workflowid][stepid]['cpuTimePerEvent']) / float(\
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['cpuTimePerEvent'])),2)
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['maxCPUs'] = "%.2f"%round(sum(
+                    grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs']) / float(\
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs'])),2)
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['avgMEM'] = "%.2f"%round(sum(
+                    grouped_wfs[cmssw_release][workflowid][stepid]['avgMEM']) / float(\
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['avgMEM']))/(1024.0*1024.0*1024.0),2)
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['stepNumber']=\
+                    grouped_wfs[cmssw_release][workflowid][stepid]['stepNumber']
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['workflowNumber']=\
+                    grouped_wfs[cmssw_release][workflowid][stepid]['workflowNumber']
     return av_grpd_wf_by_rel_arch
 
 

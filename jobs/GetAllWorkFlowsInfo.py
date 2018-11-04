@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import json
 import pprint
 import optparse
 from time import time
@@ -34,6 +35,9 @@ if __name__ == '__main__':
     raw_wfs = get_wf_info_from_es(str(opt.release), str(opt.architecture))
     grouped_wfs = GroupWorkFlowInfoByReleaseArch(raw_wfs)
     averaged_wfs = AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs)
+    json_file_name="overall.json"
+    with open(json_file_name, 'w') as outfile:
+                json.dump(raw_wfs, outfile, indent = 4, sort_keys=True)
     if dump_wf_data(averaged_wfs):
         sys.exit(0)
     else:
