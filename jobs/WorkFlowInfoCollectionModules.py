@@ -102,7 +102,7 @@ def dump_wf_data(json_data):
         for release_arch_tuple in json_data.keys():
             json_file_name = "%s_%s.json" % (release_arch_tuple[0], release_arch_tuple[1])
             with open(json_file_name, 'w') as outfile:
-                json.dump(json_data[release_arch_tuple], outfile, sort_keys=True, indent=4)
+                json.dump(json_data[release_arch_tuple], outfile, indent = 4, sort_keys=True)
     except:
         return False
     return True
