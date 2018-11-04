@@ -7,19 +7,10 @@ from time import time
 sys.path.append('/afs/cern.ch/user/m/magradze/dfs/cms-bot-hermag/cms-bot')
 from es_utils import es_query, es_workflow_stats, format
 
-
-
-
 def get_wf_info_from_es(release, architecture):
     query_info = {'workflows': '*',
                   'architecture': architecture,
                   'release_cycle': release}
-    '''
-    wf_hits = es_query(index='relvals_stats_*',
-                       query='*',
-                       start_time=int(time() * 1000) - int(86400 * 1000 * 7),
-                       end_time=int(time() * 1000))
-    '''
     wf_hits = es_query(index='relvals_stats_*',
                        query=format(
                            'release:%(release_cycle)s AND architecture:%(architecture)s AND (%(workflows)s)', **query_info),
@@ -87,9 +78,11 @@ def AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs):
             for stepid in grouped_wfs[cmssw_release][workflowid].keys():
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid] = {}
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['cpu_avg'] = sum(
-                    grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']) / float(len(grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']))
+                    grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']) / float(\
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['cpu_avg']))
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['mem_avg'] = sum(
-                    grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']) / float(len(grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']))
+                    grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']) / float(\
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['mem_avg']))
     return av_grpd_wf_by_rel_arch
 
 
@@ -105,16 +98,11 @@ def workflow_output_check(jsonData):
 
 
 def dump_wf_data(json_data):
-    for release_arch_tuple in json_data.keys():
-        json_file_name = "%s_%s.json" % (release_arch_tuple[0], release_arch_tuple[1])
-        with open(json_file_name, 'w') as outfile:
-            json.dump(json_data[release_arch_tuple], outfile, sort_keys=True, indent=4)
-
-
-def dump_json_data(file_name, jsonData):
-    raw_wfs = {}
-    if workflow_output_check(jsonData):
-        with open(file_name, 'w') as outfile:
-            json.dump(jsonData['hits']['hits'], outfile, sort_keys=True, indent=4)
-        return True
-    return False
+    try:
+        for release_arch_tuple in json_data.keys():
+            json_file_name = "%s_%s.json" % (release_arch_tuple[0], release_arch_tuple[1])
+            with open(json_file_name, 'w') as outfile:
+                json.dump(json_data[release_arch_tuple], outfile, sort_keys=True, indent=4)
+    except:
+        return False
+    return True
