@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import pprint
 import optparse
@@ -12,13 +13,13 @@ def get_opt():
     parser = optparse.OptionParser(usage)
 
     parser.add_option('-r', '--release',
-                      help='CMSSW release, e.g. CMSSW_10_4_X_*',
+                      help='CMSSW release, e.g. "CMSSW_10_4_X_*"',
                       dest='release',
                       default='*'
                       )
 
     parser.add_option('-a', '--architecture',
-                      help='CMSSW architecture, e.g. slc6_amd64_gcc700',
+                      help='CMSSW architecture, e.g. "slc6_amd64_gcc700"',
                       dest='architecture',
                       default='*'
                       )
