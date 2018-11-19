@@ -47,7 +47,7 @@ def get_cpuTimeEvent(item):
 
 
 def get_maxCPUs(item):
-    return int(item['_source']["processes"])
+    return int(round(item['_source']["processes"]))
 
 
 def get_cpu_avg(item):
@@ -101,9 +101,12 @@ def AverageGroupWorkFlowInfoByReleaseArch(grouped_wfs):
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['cpuTimePerEvent'] = "%.2f"%round(sum(
                     grouped_wfs[cmssw_release][workflowid][stepid]['cpuTimePerEvent']) / float(\
                     len(grouped_wfs[cmssw_release][workflowid][stepid]['cpuTimePerEvent'])),2)
-                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['maxCPUs'] = "%.2f"%round(sum(
+                #av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['maxCPUs'] = "%.2f"%round(sum(
+                #    grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs']) / float(\
+                #    len(grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs'])),2)
+                av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['maxCPUs'] = int(round(sum(
                     grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs']) / float(\
-                    len(grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs'])),2)
+                    len(grouped_wfs[cmssw_release][workflowid][stepid]['maxCPUs'])),2))           
                 av_grpd_wf_by_rel_arch[cmssw_release][workflowid][stepid]['avgMEM'] = "%.2f"%round(sum(
                     grouped_wfs[cmssw_release][workflowid][stepid]['avgMEM']) / float(\
                     len(grouped_wfs[cmssw_release][workflowid][stepid]['avgMEM']))/(1024.0*1024.0*1024.0),2)
